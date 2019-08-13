@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>画布五子棋</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            background-color: #666;
+            text-align:center;
+
+        }
+        #cvs {
+            border: 1px solid #000;
+            background-color: #cd6839;
+            margin-top: 50px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+    <canvas id="cvs" width="850" height="550"></canvas>
+    <script>
+        var cvs = document.getElementById('cvs');
+        var painter = cvs.getContext('2d');
+        var step = 50;
+        var h = cvs.height;
+        var w = cvs.width;
+        var flag = false;
+        var wins = [];
+        var arrb = [];
+        var arrw = [];
+        var winb = [];
+        var winw = [];
+        //画棋盘
+        for (var i = 0; i <= w / step -1; i++) {
+
+            painter.beginPath();
+            painter.moveTo(25 + i * step, 25);
+            painter.lineTo(25 + i * step, h - 25);
+            painter.lineWidth = 2;
+            painter.strokeStyle = 'black';
+            painter.stroke();
+        };
+        for (var i = 0; i <= h / step -1; i++) {
+
+            painter.beginPath();
+            painter.moveTo(25, i * step + 25);
+            painter.lineTo(w - 25, i * step + 25);
+            painter.lineWidth = 2;
+            painter.strokeStyle = 'black';
+            painter.stroke();
+        };
+        //落子函数,其实就是画圆或者画棋子图片
+        function chess(x, y, flag) {
+            painter.beginPath();
+            painter.arc(x, y, 20, 0, 2 * Math.PI);
+            if (flag) {
+                painter.fillStyle = 'black';
+            } else {
+                painter.fillStyle = 'white';
+            };
+            painter.stroke();
+            painter.fill();
+        };
+
+        for (var i = 0; i < 17; i++) {
+            wins[i] = [];
+            for (var j = 0; j < 11; j++) {
+                wins[i][j] = [];
+            };
+        };
+        var count = 0; //赢法总数
+        //竖线赢法
+        for (var i = 0; i < 17; i++) {
+            for (var j = 0; j < 7; j++) {
+                for (var k = 0; k < 5; k++) {
+                    wins[i][j + k][count] = true;
+                };
+                count++;
+            };
+        };
+
+        //横线赢法
+        for (var i = 0; i < 13; i++) {
+            for (var j = 0; j < 11; j++) {
+                for (var k = 0; k < 5; k++) {
+                    wins[i + k][j][count] = true;
+                }
+                count++;
+            }
+        }
+
+        //正斜线赢法
+        for (var i = 0; i < 13; i++) {
+            for (var j = 0; j < 7; j++) {
+                for (var k = 0; k < 5; k++) {
+                    wins[i + k][j + k][count] = true;
+                }
+                count++;
+            }
+        }
+
+        //反斜线赢法
+        for (var i = 16; i > 3; i--) {
+            for (var j = 0; j < 7; j++) {
+                for (var k = 0; k < 5; k++) {
+                    wins[i - k][j + k][count] = true;
+                };
+                count++;
+            };
+        };
+        for (var i = 0; i < count; i++) {
+            winb[i] = 0;
+            winw[i] = 0;
+        };
+
+        //注册鼠标点击事件
+        cvs.onclick = function (e) {
+            e = e || window.event;
+            var x = e.pageX - this.offsetLeft - 25;
+            var y = e.pageY - this.offsetTop - 25;
+            var restx = x % step;
+            var resty = y % step;
+            if (restx < step / 5) {
+                x -= restx;
+            } else if (restx > 4 * step / 5) {
+                x = x - restx + step;
+            } else {
+                return;
+            };
+            if (resty < step / 5) {
+                y -= resty;
+            } else if (resty > 4 * step / 5) {
+                y = y - resty + step;
+            } else {
+                return;
+            };
+            flag = !flag;
+            chess(x + 25, y + 25, flag);
+
+            if (flag) {
+                x = x  / step;
+                y = y  / step;
+                for (var k = 0; k < count; k++) {
+                    if (wins[x][y][k]) {
+                        winb[k]++;
+                        if (winb[k] == 5) {
+                            setTimeout(function () {
+                                    alert('黑子获胜');
+                                    var keepon = confirm('是否重新开始游戏');
+                                    if(keepon){
+                                        location.reload();
+                                    };
+                            }, 10);
+                        };
+                    };
+                }
+                } else {
+                    x = x / step;
+                    y = y / step;
+                    for (var k = 0; k < count; k++) {
+                        if (wins[x][y][k]) {
+                            winw[k]++;
+                            if (winw[k] == 5) {
+                                setTimeout(function () {
+                                    alert('白子获胜');
+                                    var keepon = confirm('是否重新开始游戏');
+                                    if(keepon){
+                                        location.reload();
+                                    };
+                                }, 10);
+                        };
+                        }
+                    };
+                };
+            };
+    </script>
+</body>
+
+</html>
